@@ -63,7 +63,7 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
     <>
       {/* 桌面端固定目录 - 参考 Docusaurus 样式 */}
       <aside className="hidden lg:block w-72 flex-shrink-0 border-l border-gray-200 bg-white">
-        <div className="sticky top-20 py-4 px-6 max-h-[calc(100vh-6rem)] flex flex-col">
+        <div className="sticky top-0 pt-6 pb-4 px-6 max-h-screen flex flex-col">
           {/* 标题 */}
           <div className="mb-4 pb-3 border-b border-gray-200 flex-shrink-0">
             <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center">
