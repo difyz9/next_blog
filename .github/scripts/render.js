@@ -1,13 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-const matter = require('gray-matter');
-const { unified } = require('unified');
-const remarkParse = require('remark-parse');
-const remarkGfm = require('remark-gfm');
-const remarkRehype = require('remark-rehype');
-const rehypePrism = require('rehype-prism-plus');
-const rehypeSanitize = require('rehype-sanitize');
-const rehypeStringify = require('rehype-stringify');
+import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import remarkRehype from 'remark-rehype';
+import rehypePrism from 'rehype-prism-plus';
+import rehypeSanitize from 'rehype-sanitize';
+import rehypeStringify from 'rehype-stringify';
 
 // 配置
 const DOCS_DIR = 'docs'; // 文档目录
@@ -21,7 +21,10 @@ async function markdownToHtml(markdown) {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkRehype)
-    .use(rehypePrism, { showLineNumbers: true })
+    .use(rehypePrism, { 
+      showLineNumbers: true,
+      ignoreMissing: true  // 忽略未知语言
+    })
     .use(rehypeSanitize)
     .use(rehypeStringify)
     .process(markdown);

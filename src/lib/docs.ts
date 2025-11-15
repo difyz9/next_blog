@@ -32,8 +32,11 @@ export interface DocPost {
 }
 
 export interface SidebarItem {
-  label: string;
+  label?: string;  // GitHub API 模式使用
+  title?: string;  // 预渲染模式使用
   path: string;
+  slug?: string;   // 预渲染模式使用
+  type?: string;   // 'doc' | 'category'
   position?: number;
   items?: SidebarItem[];
 }
@@ -293,8 +296,10 @@ export async function generateSidebar(): Promise<SidebarItem[]> {
         // 如果只有一个有 position，有 position 的排前面
         if (a.position !== undefined) return -1;
         if (b.position !== undefined) return 1;
-        // 都没有 position，按 label 字母排序
-        return a.label.localeCompare(b.label);
+        // 都没有 position，按 label 或 title 字母排序
+        const aLabel = a.label || a.title || '';
+        const bLabel = b.label || b.title || '';
+        return aLabel.localeCompare(bLabel);
       });
 
       // 递归排序子项
