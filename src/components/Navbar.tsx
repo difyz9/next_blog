@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { blogConfig } from '../../blog.config';
 import { useState } from 'react';
+import DocSearch from './DocSearch';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -22,7 +23,8 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
+            <DocSearch />
             {blogConfig.navbar.items.map((item, index) => (
               <Link
                 key={index}
@@ -71,6 +73,9 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200">
           <div className="px-2 pt-2 pb-3 space-y-1">
+            <div className="px-3 py-2">
+              <DocSearch />
+            </div>
             {blogConfig.navbar.items.map((item, index) => (
               <Link
                 key={index}
