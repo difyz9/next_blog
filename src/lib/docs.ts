@@ -12,6 +12,8 @@ export interface DocMetadata {
   category?: string;
   tags?: string[];
   author?: string;
+  sidebar_position?: number;
+  sidebar_label?: string;
 }
 
 export interface DocPost {
@@ -27,6 +29,7 @@ export interface DocPost {
 export interface SidebarItem {
   label: string;
   path: string;
+  position?: number;
   items?: SidebarItem[];
 }
 
@@ -87,11 +90,29 @@ export async function getDocByPath(path: string): Promise<DocPost> {
   const htmlContent = await markdownToHtml(markdown);
   const toc = extractToc(markdown);
 
-  // 生成 slug（从路径中提取）
-  const slug = path
-    .replace(blogConfig.github.docsPath + '/', '')
-    .replace('.md', '')
-    .replace(/\//g, '-');
+  // 生成 slug
+  // 如果有 sidebar_position，使用 position + 简化的标题
+  // 否则使用完整路径
+  let slug: string;
+  if (data.sidebar_position !== undefined) {
+    const relativePath = path.replace(blogConfig.github.docsPath + '/', '');
+    const parts = relativePath.split('/');
+    const fileName = parts[parts.length - 1].replace('.md', '');
+    
+    // 如果在子目录中，保留目录结构
+    if (parts.length > 1) {
+      const dirs = parts.slice(0, -1).join('-');
+      slug = `${dirs}-${data.sidebar_position}-${fileName}`;
+    } else {
+      slug = `${data.sidebar_position}-${fileName}`;
+    }
+  } else {
+    // 没有 sidebar_position，使用原来的逻辑
+    slug = path
+      .replace(blogConfig.github.docsPath + '/', '')
+      .replace('.md', '')
+      .replace(/\//g, '-');
+  }
 
   console.log('[Docs] Generated slug:', slug);
 
@@ -105,6 +126,8 @@ export async function getDocByPath(path: string): Promise<DocPost> {
       category: data.category,
       tags: data.tags,
       author: data.author,
+      sidebar_position: data.sidebar_position,
+      sidebar_label: data.sidebar_label,
     },
     content: markdown,
     htmlContent,
@@ -130,73 +153,107 @@ export async function getDocBySlug(slug: string): Promise<DocPost | null> {
  * 生成侧边栏
  */
 export async function generateSidebar(): Promise<SidebarItem[]> {
+  console.log('[Sidebar] Generating sidebar...');
+  
   try {
-    const tree = await getDirectoryTree();
+    // 获取所有文档（包含 frontmatter 信息）
+    const docs = await getAllDocs();
+    console.log('[Sidebar] Total docs:', docs.length);
+
     const docsPath = blogConfig.github.docsPath;
 
     // 构建文件树结构
     const sidebar: SidebarItem[] = [];
     const pathMap = new Map<string, SidebarItem>();
 
-    // 按路径排序
-    const sortedTree = tree.sort((a, b) => a.path.localeCompare(b.path));
+    // 获取目录树用于识别目录结构
+    const tree = await getDirectoryTree();
+    const directories = tree.filter(item => item.type === 'tree');
 
-    for (const item of sortedTree) {
-      const relativePath = item.path.replace(docsPath + '/', '');
+    // 首先处理所有目录
+    for (const dir of directories) {
+      const relativePath = dir.path.replace(docsPath + '/', '');
       const parts = relativePath.split('/');
+      const dirName = parts[parts.length - 1];
 
-      if (item.type === 'blob' && item.path.endsWith('.md')) {
-        // 处理文件
-        const fileName = parts[parts.length - 1].replace('.md', '');
-        const label = formatLabel(fileName);
-        const slug = relativePath.replace('.md', '').replace(/\//g, '-');
+      const sidebarItem: SidebarItem = {
+        label: formatLabel(dirName),
+        path: '',
+        items: [],
+      };
 
-        const sidebarItem: SidebarItem = {
-          label,
-          path: `/docs/${slug}`,
-        };
+      pathMap.set(relativePath, sidebarItem);
 
-        if (parts.length === 1) {
-          // 顶层文件
-          sidebar.push(sidebarItem);
-        } else {
-          // 嵌套文件
-          const parentPath = parts.slice(0, -1).join('/');
-          const parent = pathMap.get(parentPath);
-          if (parent) {
-            if (!parent.items) parent.items = [];
-            parent.items.push(sidebarItem);
-          }
-        }
-      } else if (item.type === 'tree') {
-        // 处理目录
-        const dirName = parts[parts.length - 1];
-        const label = formatLabel(dirName);
-
-        const sidebarItem: SidebarItem = {
-          label,
-          path: '',
-          items: [],
-        };
-
-        pathMap.set(relativePath, sidebarItem);
-
-        if (parts.length === 1) {
-          sidebar.push(sidebarItem);
-        } else {
-          const parentPath = parts.slice(0, -1).join('/');
-          const parent = pathMap.get(parentPath);
-          if (parent) {
-            if (!parent.items) parent.items = [];
-            parent.items.push(sidebarItem);
-          }
+      if (parts.length === 1) {
+        sidebar.push(sidebarItem);
+      } else {
+        const parentPath = parts.slice(0, -1).join('/');
+        const parent = pathMap.get(parentPath);
+        if (parent) {
+          if (!parent.items) parent.items = [];
+          parent.items.push(sidebarItem);
         }
       }
     }
 
+    // 然后处理所有文档
+    for (const doc of docs) {
+      const relativePath = doc.path.replace(docsPath + '/', '');
+      const parts = relativePath.split('/');
+
+      // 使用 frontmatter 中的 sidebar_label 或 title
+      const label = doc.metadata.sidebar_label || doc.metadata.title;
+      const position = doc.metadata.sidebar_position;
+
+      const sidebarItem: SidebarItem = {
+        label,
+        path: `/docs/${doc.slug}`,
+        position,
+      };
+
+      if (parts.length === 1) {
+        // 顶层文件
+        sidebar.push(sidebarItem);
+      } else {
+        // 嵌套文件
+        const parentPath = parts.slice(0, -1).join('/');
+        const parent = pathMap.get(parentPath);
+        if (parent) {
+          if (!parent.items) parent.items = [];
+          parent.items.push(sidebarItem);
+        }
+      }
+    }
+
+    // 递归排序函数
+    const sortItems = (items: SidebarItem[]) => {
+      items.sort((a, b) => {
+        // 如果都有 position，按 position 排序
+        if (a.position !== undefined && b.position !== undefined) {
+          return a.position - b.position;
+        }
+        // 如果只有一个有 position，有 position 的排前面
+        if (a.position !== undefined) return -1;
+        if (b.position !== undefined) return 1;
+        // 都没有 position，按 label 字母排序
+        return a.label.localeCompare(b.label);
+      });
+
+      // 递归排序子项
+      items.forEach(item => {
+        if (item.items && item.items.length > 0) {
+          sortItems(item.items);
+        }
+      });
+    };
+
+    // 排序所有项目
+    sortItems(sidebar);
+
+    console.log('[Sidebar] Generated sidebar items:', sidebar.length);
     return sidebar;
   } catch (error) {
-    console.error('Error generating sidebar:', error);
+    console.error('[Sidebar] Error generating sidebar:', error);
     return [];
   }
 }
