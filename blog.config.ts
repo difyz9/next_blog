@@ -1,4 +1,6 @@
 // Blog Configuration
+import type { NavbarItem } from './src/types/navbar';
+
 export const blogConfig = {
   // 数据源配置
   dataSource: {
@@ -32,17 +34,61 @@ export const blogConfig = {
     url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   },
 
-  // 导航配置
+  // 导航栏配置 (参考 Docusaurus)
+  // https://docusaurus.io/docs/api/themes/configuration#navbar
   navbar: {
     title: 'Docs',
     logo: {
       alt: 'Logo',
       src: '/logo.svg',
+      // 可选：自定义 Logo 图标类型
+      type: 'gradient' as 'gradient' | 'image', // 'gradient': 使用渐变色图标, 'image': 使用图片
+      // 渐变色图标配置
+      gradient: {
+        from: 'blue-500',
+        to: 'purple-600',
+      }
     },
+    // 副标题（显示在 Logo 下方）
+    tagline: '技术文档中心',
+    // 隐藏导航栏（默认 false）
+    hideOnScroll: false,
+    // 导航栏样式
+    style: 'default' as 'default' | 'dark' | 'primary',
     items: [
-      { label: '文档', href: '/docs' },
-      { label: '关于', href: '/about' },
-    ],
+      { 
+        label: '文档', 
+        href: '/docs',
+        position: 'left',
+      },
+      { 
+        label: '博客', 
+        href: '/blog',
+        position: 'left',
+      },
+      { 
+        label: '关于', 
+        href: '/about',
+        position: 'left',
+      },
+      // 右侧项目
+      {
+        type: 'search',
+        position: 'right',
+      },
+      {
+        type: 'link',
+        label: 'GitHub',
+        href: `https://github.com/${process.env.GITHUB_REPO || 'coding520/langchain-go-tutorial'}`,
+        icon: 'github',
+        position: 'right',
+      },
+      {
+        type: 'custom',
+        component: 'ThemeToggle', // 主题切换按钮
+        position: 'right',
+      },
+    ] as NavbarItem[],
   },
 
   // 侧边栏配置（可选，如果不配置将自动生成）
