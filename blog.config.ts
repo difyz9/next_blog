@@ -1,0 +1,41 @@
+// Blog Configuration
+export const blogConfig = {
+  // GitHub 仓库配置
+  github: {
+    repo: process.env.GITHUB_REPO || 'username/repo',
+    branch: 'main',
+    docsPath: 'docs', // 文档所在目录
+    token: process.env.GITHUB_TOKEN,
+  },
+
+  // 站点配置
+  site: {
+    name: process.env.NEXT_PUBLIC_SITE_NAME || 'Documentation Site',
+    description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'A GitHub-powered documentation system',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  },
+
+  // 导航配置
+  navbar: {
+    title: 'Docs',
+    logo: {
+      alt: 'Logo',
+      src: '/logo.svg',
+    },
+    items: [
+      { label: '文档', href: '/docs' },
+      { label: '关于', href: '/about' },
+    ],
+  },
+
+  // 侧边栏配置（可选，如果不配置将自动生成）
+  sidebar: {
+    auto: true, // 自动从文件结构生成侧边栏
+  },
+
+  // 默认作者信息
+  defaultAuthor: {
+    name: 'Anonymous',
+    avatar: '/default-avatar.png',
+  },
+};
