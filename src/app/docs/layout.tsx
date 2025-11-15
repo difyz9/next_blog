@@ -11,9 +11,9 @@ export default async function DocsLayout({
   const sidebarItems = await generateSidebar();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         <Sidebar items={sidebarItems} />
         <main className="flex-1 overflow-y-auto">
           {children}
