@@ -42,9 +42,11 @@ function getHeaders(): HeadersInit {
  * 获取指定目录的所有文件
  */
 export async function getGitHubFiles(path: string = ''): Promise<GitHubFile[]> {
-  const { repo } = blogConfig.github;
-  const fullPath = path ? `${blogConfig.github.docsPath}/${path}` : blogConfig.github.docsPath;
+  const { repo, docsPath } = blogConfig.github;
+  const fullPath = path ? `${docsPath}/${path}` : docsPath;
   const url = `https://api.github.com/repos/${repo}/contents/${fullPath}`;
+
+  console.log('[GitHub API] Fetching files from:', url);
 
   try {
     const response = await fetch(url, {
@@ -53,13 +55,20 @@ export async function getGitHubFiles(path: string = ''): Promise<GitHubFile[]> {
     });
 
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('[GitHub API] Error response:', response.status, errorText);
+      throw new Error(`GitHub API error: ${response.status} - ${errorText}`);
     }
 
     const files: GitHubFile[] = await response.json();
-    return files.filter(file => file.type === 'file' && file.name.endsWith('.md'));
+    console.log('[GitHub API] Found files:', files.length);
+    
+    const mdFiles = files.filter(file => file.type === 'file' && file.name.endsWith('.md'));
+    console.log('[GitHub API] Markdown files:', mdFiles.length);
+    
+    return mdFiles;
   } catch (error) {
-    console.error('Error fetching GitHub files:', error);
+    console.error('[GitHub API] Error fetching files:', error);
     return [];
   }
 }
@@ -71,6 +80,8 @@ export async function getFileContent(path: string): Promise<string> {
   const { repo, branch } = blogConfig.github;
   const url = `https://raw.githubusercontent.com/${repo}/${branch}/${path}`;
 
+  console.log('[GitHub API] Fetching file content:', url);
+
   try {
     const response = await fetch(url, {
       headers: getHeaders(),
@@ -78,12 +89,17 @@ export async function getFileContent(path: string): Promise<string> {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[GitHub API] Error fetching file:', response.status, errorText);
       throw new Error(`Failed to fetch file: ${response.status}`);
     }
 
-    return await response.text();
+    const content = await response.text();
+    console.log('[GitHub API] File content length:', content.length);
+    
+    return content;
   } catch (error) {
-    console.error('Error fetching file content:', error);
+    console.error('[GitHub API] Error fetching file content:', error);
     return '';
   }
 }
@@ -95,6 +111,9 @@ export async function getDirectoryTree(path: string = ''): Promise<GitHubTreeIte
   const { repo, branch, docsPath } = blogConfig.github;
   const url = `https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`;
 
+  console.log('[GitHub API] Fetching directory tree from:', url);
+  console.log('[GitHub API] Docs path:', docsPath);
+
   try {
     const response = await fetch(url, {
       headers: getHeaders(),
@@ -102,21 +121,31 @@ export async function getDirectoryTree(path: string = ''): Promise<GitHubTreeIte
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[GitHub API] Error response:', response.status, errorText);
       throw new Error(`GitHub API error: ${response.status}`);
     }
 
     const data = await response.json();
     const tree: GitHubTreeItem[] = data.tree;
 
-    // 过滤出文档目录下的 markdown 文件
-    return tree.filter(item => {
-      return (
-        item.path.startsWith(docsPath) &&
-        (item.type === 'blob' && item.path.endsWith('.md') || item.type === 'tree')
-      );
+    console.log('[GitHub API] Total items in tree:', tree.length);
+
+    // 过滤出文档目录下的 markdown 文件和目录
+    const filtered = tree.filter(item => {
+      const inDocsPath = item.path.startsWith(docsPath);
+      const isMarkdown = item.type === 'blob' && item.path.endsWith('.md');
+      const isDirectory = item.type === 'tree';
+      
+      return inDocsPath && (isMarkdown || isDirectory);
     });
+
+    console.log('[GitHub API] Filtered items:', filtered.length);
+    console.log('[GitHub API] Sample paths:', filtered.slice(0, 5).map(i => i.path));
+    
+    return filtered;
   } catch (error) {
-    console.error('Error fetching directory tree:', error);
+    console.error('[GitHub API] Error fetching directory tree:', error);
     return [];
   }
 }

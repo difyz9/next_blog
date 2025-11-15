@@ -2,9 +2,9 @@
 export const blogConfig = {
   // GitHub 仓库配置
   github: {
-    repo: process.env.GITHUB_REPO || 'username/repo',
+    repo: process.env.GITHUB_REPO || 'coding520/langchain-go-tutorial',
     branch: 'main',
-    docsPath: 'docs', // 文档所在目录
+    docsPath: 'docs', // 文档所在目录（相对于仓库根目录）
     token: process.env.GITHUB_TOKEN,
   },
 
