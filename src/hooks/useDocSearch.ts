@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { blogConfig } from '../../blog.config';
 
 export interface DocSearchResult {
   slug: string;
@@ -38,29 +37,17 @@ export function useDocSearch(query: string) {
         setLoading(true);
         setError(null);
 
-        const { repo, token } = blogConfig.github;
-        const version = blogConfig.dataSource.preRendered?.version || 'latest';
-        const branchPrefix = blogConfig.dataSource.preRendered?.branchPrefix || 'rendered/';
-        const ref = `${branchPrefix}${version}`;
-
-        const url = `https://api.github.com/repos/${repo}/contents/rendered/docs-index.json?ref=${ref}`;
-        
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `token ${token}`,
-            'Accept': 'application/vnd.github.v3+json',
-          },
+        // 使用 API 路由来安全地获取数据（不暴露 token）
+        const response = await fetch('/api/search', {
           next: { revalidate: 3600 }, // 缓存 1 小时
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch docs index: ${response.status}`);
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to fetch docs index: ${response.status}`);
         }
 
-        const data = await response.json();
-        const content = Buffer.from(data.content, 'base64').toString('utf-8');
-        const index = JSON.parse(content);
-        
+        const index = await response.json();
         setDocsIndex(index);
       } catch (err) {
         console.error('Error loading docs index:', err);
