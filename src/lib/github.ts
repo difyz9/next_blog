@@ -51,7 +51,10 @@ export async function getGitHubFiles(path: string = ''): Promise<GitHubFile[]> {
   try {
     const response = await fetch(url, {
       headers: getHeaders(),
-      next: { revalidate: 60 }, // 缓存 60 秒
+      next: { 
+        revalidate: 3600, // 缓存 1 小时
+        tags: ['github-files'],
+      },
     });
 
     if (!response.ok) {
@@ -85,7 +88,10 @@ export async function getFileContent(path: string): Promise<string> {
   try {
     const response = await fetch(url, {
       headers: getHeaders(),
-      next: { revalidate: 60 },
+      next: { 
+        revalidate: 3600, // 缓存 1 小时
+        tags: [`file-${path}`],
+      },
     });
 
     if (!response.ok) {
@@ -117,7 +123,10 @@ export async function getDirectoryTree(path: string = ''): Promise<GitHubTreeIte
   try {
     const response = await fetch(url, {
       headers: getHeaders(),
-      next: { revalidate: 300 }, // 缓存 5 分钟
+      next: { 
+        revalidate: 3600, // 缓存 1 小时
+        tags: ['directory-tree'],
+      },
     });
 
     if (!response.ok) {

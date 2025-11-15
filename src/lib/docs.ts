@@ -4,6 +4,11 @@ import readingTime from 'reading-time';
 import { getFileContent, getDirectoryTree, GitHubTreeItem } from './github';
 import { markdownToHtml, extractToc, TocItem } from './markdown';
 import { blogConfig } from '../../blog.config';
+import { 
+  getPreRenderedDocsIndex, 
+  getPreRenderedDoc, 
+  getPreRenderedSidebar 
+} from './prerendered';
 
 export interface DocMetadata {
   title: string;
@@ -38,7 +43,38 @@ export interface SidebarItem {
  */
 export async function getAllDocs(): Promise<DocPost[]> {
   console.log('[Docs] Getting all docs...');
+  console.log('[Docs] Data source:', blogConfig.dataSource.type);
   
+  // 如果使用预渲染数据源
+  if (blogConfig.dataSource.type === 'pre-rendered') {
+    try {
+      const index = await getPreRenderedDocsIndex();
+      console.log('[Docs] Pre-rendered docs:', index.length);
+      
+      // 返回简化的文档列表（用于列表页面）
+      // 完整内容在访问单个文档时加载
+      return index.map(doc => ({
+        slug: doc.slug,
+        path: doc.path,
+        metadata: {
+          title: doc.title,
+          description: doc.description,
+          date: doc.date,
+          category: doc.category,
+          tags: doc.tags,
+        },
+        content: '',
+        htmlContent: '',
+        readingTime: '1 min read',
+        toc: [],
+      }));
+    } catch (error) {
+      console.error('[Docs] Error loading pre-rendered docs:', error);
+      return [];
+    }
+  }
+  
+  // 否则使用 GitHub API
   try {
     const tree = await getDirectoryTree();
     console.log('[Docs] Directory tree items:', tree.length);
@@ -140,7 +176,20 @@ export async function getDocByPath(path: string): Promise<DocPost> {
  * 根据 slug 获取文档
  */
 export async function getDocBySlug(slug: string): Promise<DocPost | null> {
+  console.log('[Docs] Getting doc by slug:', slug);
+  console.log('[Docs] Data source:', blogConfig.dataSource.type);
+  
   try {
+    // 如果使用预渲染数据源
+    if (blogConfig.dataSource.type === 'pre-rendered') {
+      const doc = await getPreRenderedDoc(slug);
+      if (doc) {
+        console.log('[Docs] Pre-rendered doc found:', doc.metadata.title);
+      }
+      return doc;
+    }
+    
+    // 否则从 GitHub API 获取
     const docs = await getAllDocs();
     return docs.find(doc => doc.slug === slug) || null;
   } catch (error) {
@@ -154,8 +203,17 @@ export async function getDocBySlug(slug: string): Promise<DocPost | null> {
  */
 export async function generateSidebar(): Promise<SidebarItem[]> {
   console.log('[Sidebar] Generating sidebar...');
+  console.log('[Sidebar] Data source:', blogConfig.dataSource.type);
   
   try {
+    // 如果使用预渲染数据源
+    if (blogConfig.dataSource.type === 'pre-rendered') {
+      const sidebar = await getPreRenderedSidebar();
+      console.log('[Sidebar] Pre-rendered sidebar items:', sidebar.length);
+      return sidebar;
+    }
+    
+    // 否则从 GitHub API 动态生成
     // 获取所有文档（包含 frontmatter 信息）
     const docs = await getAllDocs();
     console.log('[Sidebar] Total docs:', docs.length);

@@ -1,5 +1,22 @@
 // Blog Configuration
 export const blogConfig = {
+  // 数据源配置
+  dataSource: {
+    // 'github-api': 实时从 GitHub API 获取（开发模式）
+    // 'pre-rendered': 使用预渲染的 JSON 文件（生产模式，更快）
+    type: (process.env.DATA_SOURCE || 'pre-rendered') as 'github-api' | 'pre-rendered',
+    
+    // 预渲染数据源配置（当 type = 'pre-rendered' 时使用）
+    preRendered: {
+      // 使用的分支或 tag
+      // 'latest': 使用最新渲染版本
+      // 'v1.0.0': 使用特定 tag 版本
+      version: process.env.RENDERED_VERSION || 'latest',
+      // 渲染文件的分支前缀
+      branchPrefix: 'rendered/',
+    },
+  },
+
   // GitHub 仓库配置
   github: {
     repo: process.env.GITHUB_REPO || 'coding520/langchain-go-tutorial',
