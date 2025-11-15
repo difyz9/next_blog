@@ -55,4 +55,13 @@ export const blogConfig = {
     name: 'Anonymous',
     avatar: '/default-avatar.png',
   },
+
+  // 目录 (Table of Contents) 配置
+  // 参考 Docusaurus: https://docusaurus.io/docs/api/themes/configuration#table-of-contents
+  tableOfContents: {
+    // 显示在目录中的最小标题级别（2-6）
+    minHeadingLevel: 2,
+    // 显示在目录中的最大标题级别（2-6）
+    maxHeadingLevel: 3,
+  },
 };
