@@ -1,0 +1,107 @@
+{
+  "currency": "CNY",
+  "locale": "zh-CN",
+  "plans": [
+    {
+      "id": "vip_7d",
+      "key": "7d",
+      "name": "7天会员",
+      "durationDays": 7,
+      "billingCycle": "one_time",
+      "price": 9.9,
+      "originalPrice": 12.9,
+      "discount": {
+        "type": "percent",
+        "value": 23,
+        "label": "限时 23% OFF"
+      },
+      "features": [
+        "会员内容无限制访问",
+        "去广告体验",
+        "基础专属标识"
+      ],
+      "badges": [],
+      "isDefault": false,
+      "isRecommended": false,
+      "sort": 10,
+      "ctaText": "立即开通"
+    },
+    {
+      "id": "vip_month",
+      "key": "monthly",
+      "name": "月度会员",
+      "durationDays": 30,
+      "billingCycle": "monthly",
+      "price": 29.0,
+      "originalPrice": 39.0,
+      "discount": {
+        "type": "amount",
+        "value": 10.0,
+        "label": "立省 ¥10"
+      },
+      "features": [
+        "会员内容无限制访问",
+        "去广告体验",
+        "专属标识 + 昵称样式",
+        "优先客服支持"
+      ],
+      "badges": [],
+      "isDefault": true,
+      "isRecommended": false,
+      "sort": 20,
+      "ctaText": "立即开通"
+    },
+    {
+      "id": "vip_quarter",
+      "key": "quarterly",
+      "name": "季度会员",
+      "durationDays": 90,
+      "billingCycle": "quarterly",
+      "price": 79.0,
+      "originalPrice": 99.0,
+      "discount": {
+        "type": "percent",
+        "value": 20,
+        "label": "最划算：省 20%"
+      },
+      "features": [
+        "会员内容无限制访问",
+        "去广告体验",
+        "专属标识 + 昵称样式",
+        "优先客服支持",
+        "季度专属活动资格"
+      ],
+      "badges": ["HOT"],
+      "isDefault": false,
+      "isRecommended": true,
+      "sort": 30,
+      "ctaText": "推荐开通"
+    },
+    {
+      "id": "vip_year",
+      "key": "yearly",
+      "name": "年度会员",
+      "durationDays": 365,
+      "billingCycle": "yearly",
+      "price": 259.0,
+      "originalPrice": 399.0,
+      "discount": {
+        "type": "percent",
+        "value": 35,
+        "label": "年度特惠 35% OFF"
+      },
+      "features": [
+        "会员内容无限制访问",
+        "去广告体验",
+        "专属标识 + 昵称样式",
+        "优先客服支持",
+        "年度礼包（如有）"
+      ],
+      "badges": ["BEST"],
+      "isDefault": false,
+      "isRecommended": false,
+      "sort": 40,
+      "ctaText": "立即开通"
+    }
+  ]
+}
